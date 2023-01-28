@@ -3,7 +3,6 @@ fn main() {
     println!("Hello, world!");
     let deck: Deck = generate_deck();
     println!("{}", deck);
-
     // println!(
     //     "{}",
     //     Card {
@@ -70,9 +69,9 @@ fn generate_deck() -> Deck {
     //     }
     // }
     // cards.push(Card {suit: Suit::Clubs, rank: Rank::Ace});
-    let cards: Deck = Deck(
+    let deck = Deck(
         c![Card {suit: *suits, rank: ranks}, for suits in &suit_list, for ranks in rank_list]);
-    cards
+    deck
 
 }
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
@@ -94,7 +93,6 @@ impl fmt::Display for Suit {
     }
 }
 
-// use std::fmt;
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
 enum Rank {
     Numeric(i32),
