@@ -1,47 +1,74 @@
-use std::fmt; // Import `fmt`
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+// use std::io;
+
 fn main() {
     println!("Hello, world!");
-    let deck: Deck = generate_deck();
+    let mut deck: Deck = generate_deck();
+    deck = shuffle(deck);
+    let mut score = 0;
+
+    let mut hand: Deck = Deck(Vec::new());
+
+    println!("Welcome to the game.");
+    println!("Your current score: {}", calculate_score(&hand));
+    println!("Draw a card? [y/n]");
+    let mut user_input = std::io::stdin().lines().next().unwrap().unwrap();
+
+    while user_input.eq("y") && score<=21{
+        (deck, hand) = draw_card(deck, hand);
+        score = calculate_score(&hand);
+        println!("Your current score: {}", score);
+        println!("Deck:\n{}", hand);
+        // if score>21 went bust
+        println!("Draw a card? [y/n]");
+        user_input = std::io::stdin().lines().next().unwrap().unwrap();
+    }
+    println!("score {}",score);
+    // println!("Deck {} ", deck);
+    // println!("Hand {} ", hand);
+}
+fn draw_card(mut deck: Deck, mut hand: Deck) -> (Deck, Deck) {
+    hand.0.push(deck.0[0]);
+    deck.0.remove(0);
+    return (deck, hand);
+}
+
+fn shuffle(mut deck: Deck) -> Deck {
+    deck.0.shuffle(&mut thread_rng());
     println!("{}", deck);
-    // println!(
-    //     "{}",
-    //     Card {
-    //         suit: Suit::Clubs,
-    //         rank: Rank::Ace
-    //     }
-    // );
-    // println!(
-    //     "{}",
-    //     Card {
-    //         suit: Suit::Clubs,
-    //         rank: Rank::Numeric(7)
-    //     }
-    // );
-    // println!("{}", Rank::Ace);
-    // println!("{}", Rank::Numeric(5));
-    // println!("{}", Suit::Spades);
-}
-#[derive(Copy, Clone)]
-struct Card {
-    suit: Suit,
-    rank: Rank,
+
+    return deck;
 }
 
-impl std::fmt::Display for Card {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Card {} {}", self.suit, self.rank)
+fn calculate_score(deck: &Deck) -> i32 {
+    let mut score = 0;
+    for card in &deck.0 {
+        score += score_rank(*card);
     }
+    if score > 21 {
+        score -= 10 * rank_occurence(deck, Rank::Ace)
+    }
+    // println!("{}",score);
+    return score;
 }
-struct Deck(pub Vec<Card>);
-
-impl fmt::Display for Deck {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.iter().fold(Ok(()), |result, card| {
-            result.and_then(|_| writeln!(f, "{} of {}", card.rank, card.suit))
-        })
+fn score_rank(card: Card) -> i32 {
+    match card.rank {
+        Rank::Numeric(x) => return x,
+        Rank::Ace => return 11,
+        _ => return 10, // Jack, Queen, King
     }
 }
 
+fn rank_occurence(deck: &Deck, rank: Rank) -> i32 {
+    let mut tot_ranks = 0;
+    for card in &deck.0 {
+        if card.rank == rank {
+            tot_ranks += 1;
+        }
+    }
+    return tot_ranks;
+}
 
 #[macro_use]
 extern crate cute;
@@ -62,28 +89,44 @@ fn generate_deck() -> Deck {
         Rank::King,
         Rank::Ace,
     ];
-    // let mut cards: Vec<Card> = Vec::new();
-    // for suit in &Suit {
-    //     for rank in &Rank {
-    //         cards.push(Card {suit: *suit, rank: *rank});
-    //     }
-    // }
-    // cards.push(Card {suit: Suit::Clubs, rank: Rank::Ace});
+
     let deck = Deck(
-        c![Card {suit: *suits, rank: ranks}, for suits in &suit_list, for ranks in rank_list]);
+        c![Card {suit: *suits, rank: *ranks}, for suits in &suit_list, for ranks in &rank_list],
+    );
+
     deck
-
 }
-#[derive(PartialEq, PartialOrd, Copy, Clone)]
+// #[derive(Clone)]
+struct Deck(pub Vec<Card>);
 
+impl std::fmt::Display for Deck {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.0.iter().fold(Ok(()), |result, card| {
+            result.and_then(|_| writeln!(f, "{} of {}", card.rank, card.suit))
+        })
+    }
+}
+#[derive(Copy, Clone)]
+struct Card {
+    suit: Suit,
+    rank: Rank,
+}
+
+impl std::fmt::Display for Card {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Card {} {}", self.suit, self.rank)
+    }
+}
+
+#[derive(PartialEq, PartialOrd, Copy, Clone)]
 enum Suit {
     Clubs,
     Diamonds,
     Hearts,
     Spades,
 }
-impl fmt::Display for Suit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Display for Suit {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
             Suit::Hearts => write!(f, "♥"),
             Suit::Diamonds => write!(f, "♦"),
@@ -101,8 +144,8 @@ enum Rank {
     King,
     Ace,
 }
-impl fmt::Display for Rank {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl std::fmt::Display for Rank {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
             Rank::Numeric(rank) => write!(f, "{:?}", rank),
             Rank::Jack => write!(f, "Jack"),
@@ -112,3 +155,47 @@ impl fmt::Display for Rank {
         }
     }
 }
+
+// println!(
+//     "{}",
+//     Card {
+//         suit: Suit::Clubs,
+//         rank: Rank::Ace
+//     }
+// );
+// println!(
+//     "{}",
+//     Card {
+//         suit: Suit::Clubs,
+//         rank: Rank::Numeric(7)
+//     }
+// );
+// println!("{}", Rank::Ace);
+// println!("{}", Rank::Numeric(5));
+// println!("{}", Suit::Spades);
+
+// println!("{}", deck);
+// let deck2 = Deck(vec![
+//     Card {
+//         suit: Suit::Clubs,
+//         rank: Rank::Ace,
+//     },
+//     Card {
+//         suit: Suit::Clubs,
+//         rank: Rank::Ace,
+//     },
+//     Card {
+//         suit: Suit::Clubs,
+//         rank: Rank::Jack,
+//     },
+//     Card {
+//         suit: Suit::Clubs,
+//         rank: Rank::Numeric(7),
+//     },
+//     Card {
+//         suit: Suit::Clubs,
+//         rank: Rank::Numeric(3),
+//     },
+// ]);
+// let mut score = 0;
+// println!("{}", calculate_score(deck2));
