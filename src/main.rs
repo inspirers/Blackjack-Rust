@@ -1,33 +1,63 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-// use std::io;
 
 fn main() {
-    println!("Hello, world!");
     let mut deck: Deck = generate_deck();
-    deck = shuffle(deck);
-    let mut score = 0;
+    let mut player_hand: Deck = Deck(Vec::new());
+    let mut bank_hand: Deck = Deck(Vec::new());
 
-    let mut hand: Deck = Deck(Vec::new());
+    deck = shuffle(deck);
 
     println!("Welcome to the game.");
-    println!("Your current score: {}", calculate_score(&hand));
+    println!("Your current score: {}", calculate_score(&player_hand));
+
+    (deck, player_hand) = player_draw(deck, player_hand);
+    (deck, bank_hand) = bank_draw(deck, bank_hand);
+    winner(bank_hand, player_hand);
+}
+fn winner(bank_hand: Deck, player_hand: Deck) {
+    let player_score = calculate_score(&player_hand);
+    let bank_score = calculate_score(&bank_hand);
+    if player_score > 21 {
+        println!("Winner: Bank");
+    } else if player_score >= bank_score {
+        println!("Winner: Player");
+    } else {
+        println!("Winner: Bank");
+    }
+}
+
+fn bank_draw(mut deck: Deck, mut bank_hand: Deck) -> (Deck, Deck) {
+    let mut bank_score = 0;
+    while bank_score <= 16 {
+        (deck, bank_hand) = draw_card(deck, bank_hand);
+        bank_score = calculate_score(&bank_hand);
+
+        println!("Your current score: {}", bank_score);
+        println!("Deck:\n{}", bank_hand);
+    }
+    return (deck, bank_hand);
+}
+
+fn player_draw(mut deck: Deck, mut hand: Deck) -> (Deck, Deck) {
     println!("Draw a card? [y/n]");
+    let mut player_score;
     let mut user_input = std::io::stdin().lines().next().unwrap().unwrap();
 
-    while user_input.eq("y") && score<=21{
+    while user_input.eq("y") {
         (deck, hand) = draw_card(deck, hand);
-        score = calculate_score(&hand);
-        println!("Your current score: {}", score);
+        player_score = calculate_score(&hand);
+        println!("Your current score: {}", player_score);
         println!("Deck:\n{}", hand);
-        // if score>21 went bust
+        if player_score > 21 {
+            break;
+        }
         println!("Draw a card? [y/n]");
         user_input = std::io::stdin().lines().next().unwrap().unwrap();
     }
-    println!("score {}",score);
-    // println!("Deck {} ", deck);
-    // println!("Hand {} ", hand);
+    return (deck, hand);
 }
+
 fn draw_card(mut deck: Deck, mut hand: Deck) -> (Deck, Deck) {
     hand.0.push(deck.0[0]);
     deck.0.remove(0);
@@ -49,7 +79,7 @@ fn calculate_score(deck: &Deck) -> i32 {
     if score > 21 {
         score -= 10 * rank_occurence(deck, Rank::Ace)
     }
-    // println!("{}",score);
+
     return score;
 }
 fn score_rank(card: Card) -> i32 {
@@ -155,47 +185,3 @@ impl std::fmt::Display for Rank {
         }
     }
 }
-
-// println!(
-//     "{}",
-//     Card {
-//         suit: Suit::Clubs,
-//         rank: Rank::Ace
-//     }
-// );
-// println!(
-//     "{}",
-//     Card {
-//         suit: Suit::Clubs,
-//         rank: Rank::Numeric(7)
-//     }
-// );
-// println!("{}", Rank::Ace);
-// println!("{}", Rank::Numeric(5));
-// println!("{}", Suit::Spades);
-
-// println!("{}", deck);
-// let deck2 = Deck(vec![
-//     Card {
-//         suit: Suit::Clubs,
-//         rank: Rank::Ace,
-//     },
-//     Card {
-//         suit: Suit::Clubs,
-//         rank: Rank::Ace,
-//     },
-//     Card {
-//         suit: Suit::Clubs,
-//         rank: Rank::Jack,
-//     },
-//     Card {
-//         suit: Suit::Clubs,
-//         rank: Rank::Numeric(7),
-//     },
-//     Card {
-//         suit: Suit::Clubs,
-//         rank: Rank::Numeric(3),
-//     },
-// ]);
-// let mut score = 0;
-// println!("{}", calculate_score(deck2));
