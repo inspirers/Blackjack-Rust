@@ -1,5 +1,6 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use std::{thread, time};
 
 fn main() {
     let mut deck: Deck = generate_deck();
@@ -18,6 +19,9 @@ fn main() {
 fn winner(bank_hand: Deck, player_hand: Deck) {
     let player_score = calculate_score(&player_hand);
     let bank_score = calculate_score(&bank_hand);
+    println!("Your score: {}", player_score);
+    println!("Bank score: {}", bank_score);
+
     if player_score > 21 {
         println!("Winner: Bank");
     } else if player_score >= bank_score {
@@ -33,8 +37,9 @@ fn bank_draw(mut deck: Deck, mut bank_hand: Deck) -> (Deck, Deck) {
         (deck, bank_hand) = draw_card(deck, bank_hand);
         bank_score = calculate_score(&bank_hand);
 
-        println!("Your current score: {}", bank_score);
+        println!("Bank current score: {}", bank_score);
         println!("Deck:\n{}", bank_hand);
+        thread::sleep(time::Duration::from_secs(1));
     }
     return (deck, bank_hand);
 }
@@ -126,7 +131,7 @@ fn generate_deck() -> Deck {
 
     deck
 }
-// #[derive(Clone)]
+
 struct Deck(pub Vec<Card>);
 
 impl std::fmt::Display for Deck {
@@ -136,7 +141,7 @@ impl std::fmt::Display for Deck {
         })
     }
 }
-#[derive(Copy, Clone)]
+#[derive(Copy,Clone)]
 struct Card {
     suit: Suit,
     rank: Rank,
