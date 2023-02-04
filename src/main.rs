@@ -87,7 +87,7 @@ fn calculate_score(deck: &Deck) -> i32 {
 
     return score;
 }
-fn score_rank(card: Card) -> i32 {
+const fn score_rank(card: Card) -> i32 {
     match card.rank {
         Rank::Numeric(x) => return x,
         Rank::Ace => return 11,
