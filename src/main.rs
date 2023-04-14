@@ -13,7 +13,7 @@ fn main() {
     println!("Your current score: {}", calculate_score(&player_hand));
 
     (deck, player_hand) = player_draw(deck, player_hand);
-    (deck, bank_hand) = bank_draw(deck, bank_hand);
+    bank_hand = bank_draw(deck, bank_hand);
     winner(bank_hand, player_hand);
 }
 fn winner(bank_hand: Deck, player_hand: Deck) {
@@ -31,7 +31,7 @@ fn winner(bank_hand: Deck, player_hand: Deck) {
     }
 }
 
-fn bank_draw(mut deck: Deck, mut bank_hand: Deck) -> (Deck, Deck) {
+fn bank_draw(mut deck: Deck, mut bank_hand: Deck) -> Deck {
     let mut bank_score = 0;
     while bank_score <= 16 {
         (deck, bank_hand) = draw_card(deck, bank_hand);
@@ -41,7 +41,7 @@ fn bank_draw(mut deck: Deck, mut bank_hand: Deck) -> (Deck, Deck) {
         println!("Deck:\n{}", bank_hand);
         thread::sleep(time::Duration::from_secs(1));
     }
-    return (deck, bank_hand);
+    bank_hand
 }
 
 fn player_draw(mut deck: Deck, mut hand: Deck) -> (Deck, Deck) {
@@ -60,20 +60,20 @@ fn player_draw(mut deck: Deck, mut hand: Deck) -> (Deck, Deck) {
         println!("Draw a card? [y/n]");
         user_input = std::io::stdin().lines().next().unwrap().unwrap();
     }
-    return (deck, hand);
+    (deck, hand)
 }
 
 fn draw_card(mut deck: Deck, mut hand: Deck) -> (Deck, Deck) {
     hand.0.push(deck.0[0]);
     deck.0.remove(0);
-    return (deck, hand);
+    (deck, hand)
 }
 
 fn shuffle(mut deck: Deck) -> Deck {
     deck.0.shuffle(&mut thread_rng());
     println!("{}", deck);
 
-    return deck;
+    deck
 }
 
 fn calculate_score(deck: &Deck) -> i32 {
@@ -85,13 +85,13 @@ fn calculate_score(deck: &Deck) -> i32 {
         score -= 10 * rank_occurence(deck, Rank::Ace)
     }
 
-    return score;
+    score
 }
 const fn score_rank(card: Card) -> i32 {
     match card.rank {
-        Rank::Numeric(x) => return x,
-        Rank::Ace => return 11,
-        _ => return 10, // Jack, Queen, King
+        Rank::Numeric(x) => x,
+        Rank::Ace => 11,
+        _ => 10, // Jack, Queen, King
     }
 }
 
@@ -102,7 +102,7 @@ fn rank_occurence(deck: &Deck, rank: Rank) -> i32 {
             tot_ranks += 1;
         }
     }
-    return tot_ranks;
+    tot_ranks
 }
 
 #[macro_use]
@@ -125,11 +125,7 @@ fn generate_deck() -> Deck {
         Rank::Ace,
     ];
 
-    let deck = Deck(
-        c![Card {suit: *suits, rank: *ranks}, for suits in &suit_list, for ranks in &rank_list],
-    );
-
-    deck
+    Deck(c![Card {suit: *suits, rank: *ranks}, for suits in &suit_list, for ranks in &rank_list])
 }
 
 struct Deck(pub Vec<Card>);
@@ -141,7 +137,7 @@ impl std::fmt::Display for Deck {
         })
     }
 }
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 struct Card {
     suit: Suit,
     rank: Rank,
