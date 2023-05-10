@@ -19,7 +19,12 @@ fn main() {
 fn winner(bank_hand: Deck, player_hand: Deck) {
     let player_score = calculate_score(&player_hand);
     let bank_score = calculate_score(&bank_hand);
-    println!("Your score: {}", player_score);
+
+    if player_score > 21 {
+        println!("Your score: Bust ({})", player_score);
+    } else {
+        println!("Your score: {}", player_score);
+    }
     println!("Bank score: {}", bank_score);
 
     if player_score > 21 {
